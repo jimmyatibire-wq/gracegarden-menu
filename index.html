@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grace Garden Hotel – Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0b1f3a; --navy-light: #132b4f;
+      --gold: #d4a017; --gold-bright: #f0c040;
+      --white: #f5f0e8; --text-muted: #a0b0c8;
+    }
+    body { background: var(--navy); color: var(--white); font-family: 'Lato', sans-serif; min-height: 100vh; padding-bottom: 100px; }
+    header { background: linear-gradient(180deg, #060f1e 0%, var(--navy) 100%); text-align: center; padding: 28px 20px 22px; border-bottom: 1px solid rgba(212,160,23,0.3); }
+    header::after { content: ''; display: block; width: 60px; height: 3px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 12px auto 0; }
+    header img { width: 110px; border-radius: 50%; margin-bottom: 10px; filter: drop-shadow(0 4px 16px rgba(212,160,23,0.4)); }
+    header h1 { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 900; letter-spacing: 0.04em; color: var(--white); }
+    header p { font-size: 0.78rem; color: var(--gold); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 4px; font-weight: 700; }
+    .search-wrap { padding: 16px 16px 8px; }
+    .search-wrap input { width: 100%; padding: 12px 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(212,160,23,0.35); border-radius: 50px; color: var(--white); font-family: 'Lato', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .search-wrap input::placeholder { color: var(--text-muted); }
+    .search-wrap input:focus { border-color: var(--gold); }
+    #menu { padding: 6px 0 20px; }
+    .category-block { margin: 18px 14px 4px; }
+    .category-title { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .category-title h3 { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--gold-bright); font-weight: 700; white-space: nowrap; }
+    .category-title::after { content: ''; flex: 1; height: 1px; background: rgba(212,160,23,0.2); }
+    .item { background: var(--navy-light); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 15px 18px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; transition: transform 0.15s, border-color 0.15s; }
+    .item:hover { transform: translateY(-2px); border-color: rgba(212,160,23,0.3); }
+    .item-name { font-size: 0.97rem; color: var(--white); }
+    .item-price { font-weight: 700; font-size: 1rem; color: var(--gold-bright); white-space: nowrap; margin-left: 12px; }
+    #empty { display: none; text-align: center; padding: 50px 20px; color: var(--text-muted); font-style: italic; }
+    .loading { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+    .loading span { display: inline-block; animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+    .floating { position: fixed; right: 14px; bottom: 18px; display: flex; flex-direction: column; gap: 10px; z-index: 100; }
+    .btn { display: block; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0b1f3a; padding: 13px 18px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 0.85rem; text-align: center; letter-spacing: 0.04em; box-shadow: 0 4px 18px rgba(212,160,23,0.45); transition: transform 0.15s; }
+    .btn:hover { transform: translateY(-2px); }
+    .admin-link { text-align: center; padding: 10px; font-size: 0.75rem; }
+    .admin-link a { color: rgba(212,160,23,0.4); text-decoration: none; }
+    .admin-link a:hover { color: var(--gold); }
+  </style>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="Grace Garden Hotel Logo"/>
+  <h1>Grace Garden Hotel</h1>
+  <p>Restaurant Menu</p>
+</header>
+<div class="search-wrap">
+  <input type="search" id="searchInput" placeholder="🔍  Search menu items…" oninput="filterMenu(this.value)"/>
+</div>
+<div id="menu"><div class="loading"><span>Loading menu…</span></div></div>
+<div id="empty">No items found.</div>
+<div class="floating">
+  <a class="btn" href="https://wa.me/233249320157">💬 WhatsApp</a>
+  <a class="btn" href="tel:+233249320157">📞 Call Waiter</a>
+</div>
+<div class="admin-link"><a href="admin.html">staff</a></div>
+<script>
+  const BIN_ID  = "6a1048156610dd3ae8894989";
+  const API_KEY = "$2a$10$DvPghXaVA8aQSlzE2StfOOgUT1XrMj1p0paWE.I6HOCjncd3.OQ5S";
+  const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+
+  let allItems = [];
+
+  async function loadMenu() {
+    try {
+      const res = await fetch(BIN_URL, {
+        headers: { "X-Master-Key": API_KEY }
+      });
+      const json = await res.json();
+      allItems = json.record;
+      renderMenu(allItems);
+    } catch(e) {
+      document.getElementById("menu").innerHTML = '<div class="loading"><span>Could not load menu. Please check your connection.</span></div>';
+    }
+  }
+
+  function renderMenu(items) {
+    const container = document.getElementById("menu");
+    const empty = document.getElementById("empty");
+    container.innerHTML = "";
+    if (items.length === 0) { empty.style.display = "block"; return; }
+    empty.style.display = "none";
+    const grouped = {};
+    items.forEach(item => {
+      if (!grouped[item.category]) grouped[item.category] = [];
+      grouped[item.category].push(item);
+    });
+    for (const cat in grouped) {
+      const block = document.createElement("div");
+      block.className = "category-block";
+      block.innerHTML = `<div class="category-title"><h3>${cat}</h3></div>`;
+      grouped[cat].forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `<span class="item-name">${item.name}</span><span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>`;
+        block.appendChild(div);
+      });
+      container.appendChild(block);
+    }
+  }
+
+  function filterMenu(query) {
+    if (!query.trim()) { renderMenu(allItems); return; }
+    const q = query.toLowerCase();
+    renderMenu(allItems.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)));
+  }
+
+  loadMenu();
+</script>
+</body>
+</html>

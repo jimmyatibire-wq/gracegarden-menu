@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grace Garden – Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0b1f3a; --navy-light: #132b4f; --navy-card: #1a3560;
+      --gold: #d4a017; --gold-bright: #f0c040;
+      --white: #f5f0e8; --text-muted: #a0b0c8;
+      --danger: #e05555; --success: #3ecf8e;
+    }
+    body { background: var(--navy); color: var(--white); font-family: 'Lato', sans-serif; min-height: 100vh; padding-bottom: 60px; }
+    header { background: linear-gradient(180deg, #060f1e 0%, var(--navy) 100%); padding: 22px 20px 18px; border-bottom: 1px solid rgba(212,160,23,0.3); display: flex; align-items: center; gap: 14px; }
+    header img { width: 50px; border-radius: 50%; }
+    header div h1 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--white); }
+    header div p { font-size: 0.72rem; color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
+    .header-right { margin-left: auto; }
+    .header-right a { color: var(--text-muted); text-decoration: none; font-size: 0.82rem; }
+    .header-right a:hover { color: var(--gold); }
+    .container { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
+    .card { background: var(--navy-light); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 22px; margin-bottom: 22px; }
+    .card h2 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold-bright); margin-bottom: 16px; }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-grid .full { grid-column: 1 / -1; }
+    label { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+    input, select { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-family: 'Lato', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; }
+    input:focus, select:focus { border-color: var(--gold); }
+    input::placeholder { color: rgba(160,176,200,0.5); }
+    select option { background: var(--navy-light); }
+    .btn-primary { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0b1f3a; border: none; border-radius: 10px; font-family: 'Lato', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-danger { background: transparent; border: 1px solid rgba(224,85,85,0.4); color: var(--danger); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; }
+    .btn-danger:hover { background: rgba(224,85,85,0.15); }
+    .btn-edit { background: transparent; border: 1px solid rgba(240,192,64,0.4); color: var(--gold-bright); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; margin-right: 6px; }
+    .btn-edit:hover { background: rgba(240,192,64,0.1); }
+    #toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; z-index: 999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { background: var(--success); color: #0b1f3a; }
+    #toast.error { background: var(--danger); color: white; }
+    #toast.info { background: var(--gold); color: #0b1f3a; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab { padding: 6px 14px; border-radius: 50px; border: 1px solid rgba(212,160,23,0.3); background: transparent; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: all 0.15s; }
+    .tab.active, .tab:hover { background: rgba(212,160,23,0.15); color: var(--gold-bright); border-color: var(--gold); }
+    .item-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .item-row:last-child { border-bottom: none; }
+    .item-info .item-name { font-size: 0.95rem; }
+    .item-info .item-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .item-price { font-weight: 700; color: var(--gold-bright); margin-right: 10px; font-size: 0.95rem; white-space: nowrap; }
+    .item-actions { display: flex; align-items: center; flex-shrink: 0; }
+    .empty-list { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+    .stat-card { background: var(--navy-light); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; text-align: center; }
+    .stat-card .num { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--gold-bright); font-weight: 700; }
+    .stat-card .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .overlay.open { display: flex; }
+    .modal { background: var(--navy-card); border: 1px solid rgba(212,160,23,0.3); border-radius: 18px; padding: 26px; width: 100%; max-width: 420px; }
+    .modal h3 { font-family: 'Playfair Display', serif; color: var(--gold-bright); margin-bottom: 18px; }
+    .modal-field { margin-bottom: 12px; }
+    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+    .btn-secondary { flex: 1; padding: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.9rem; }
+    .btn-save { flex: 2; padding: 12px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); border: none; border-radius: 10px; color: #0b1f3a; font-weight: 700; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.9rem; }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="Logo"/>
+  <div>
+    <h1>Admin Dashboard</h1>
+    <p>Grace Garden Hotel</p>
+  </div>
+  <div class="header-right"><a href="index.html">← View Menu</a></div>
+</header>
+
+<div id="toast"></div>
+
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h3>✏️ Edit Item</h3>
+    <div class="modal-field"><label>Item Name</label><input id="editName" placeholder="e.g. Jollof Rice with Chicken"/></div>
+    <div class="modal-field"><label>Price (GH₵)</label><input id="editPrice" type="number" placeholder="e.g. 50"/></div>
+    <div class="modal-field"><label>Category</label><input id="editCategory" placeholder="e.g. Rice Dishes"/></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeEdit()">Cancel</button>
+      <button class="btn-save" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>➕ Add Menu Item</h2>
+    <div class="form-grid">
+      <div class="full"><label>Item Name</label><input id="addName" placeholder="e.g. Waakye with Fish"/></div>
+      <div><label>Price (GH₵)</label><input id="addPrice" type="number" placeholder="e.g. 45"/></div>
+      <div><label>Category</label><input id="addCategory" list="catList" placeholder="e.g. Local Dishes"/><datalist id="catList"></datalist></div>
+    </div>
+    <button class="btn-primary" id="addBtn" onclick="addItem()">Add to Menu</button>
+  </div>
+
+  <div class="card">
+    <h2>📋 Current Menu</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="itemList"><div class="empty-list">Loading menu…</div></div>
+  </div>
+</div>
+
+<script>
+  const BIN_ID  = "6a1048156610dd3ae8894989";
+  const API_KEY = "$2a$10$DvPghXaVA8aQSlzE2StfOOgUT1XrMj1p0paWE.I6HOCjncd3.OQ5S";
+  const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+  let menuItems = [];
+  let activeFilter = "All";
+  let editingId = null;
+
+  // ── JSONBin helpers ──
+  async function fetchMenu() {
+    const res = await fetch(BIN_URL + "/latest", {
+      headers: { "X-Master-Key": API_KEY }
+    });
+    const json = await res.json();
+    return json.record;
+  }
+
+  async function saveMenu(data) {
+    const res = await fetch(BIN_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Master-Key": API_KEY
+      },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error("Save failed");
+  }
+
+  // ── Toast ──
+  function toast(msg, type = "success") {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.className = "show " + type;
+    setTimeout(() => { el.className = ""; }, 3000);
+  }
+
+  // ── Render ──
+  function getCategories() {
+    return ["All", ...new Set(menuItems.map(i => i.category))];
+  }
+
+  function renderStats() {
+    const cats = new Set(menuItems.map(i => i.category));
+    const minPrice = menuItems.length ? Math.min(...menuItems.map(i => i.price)) : 0;
+    document.getElementById("stats").innerHTML = `
+      <div class="stat-card"><div class="num">${menuItems.length}</div><div class="label">Total Items</div></div>
+      <div class="stat-card"><div class="num">${cats.size}</div><div class="label">Categories</div></div>
+      <div class="stat-card"><div class="num">GH₵${minPrice}</div><div class="label">From</div></div>
+    `;
+  }
+
+  function renderTabs() {
+    document.getElementById("tabs").innerHTML = getCategories().map(c =>
+      `<button class="tab ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
+    ).join("");
+    const dl = document.getElementById("catList");
+    dl.innerHTML = [...new Set(menuItems.map(i => i.category))].map(c => `<option value="${c}">`).join("");
+  }
+
+  function setFilter(cat) { activeFilter = cat; renderTabs(); renderList(); }
+
+  function renderList() {
+    const filtered = activeFilter === "All" ? menuItems : menuItems.filter(i => i.category === activeFilter);
+    const el = document.getElementById("itemList");
+    if (filtered.length === 0) { el.innerHTML = '<div class="empty-list">No items in this category yet.</div>'; return; }
+    el.innerHTML = filtered.map(item => `
+      <div class="item-row">
+        <div class="item-info">
+          <div class="item-name">${item.name}</div>
+          <div class="item-meta">${item.category}</div>
+        </div>
+        <div class="item-actions">
+          <span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>
+          <button class="btn-edit" onclick="openEdit(${item.id})">Edit</button>
+          <button class="btn-danger" onclick="deleteItem(${item.id})">✕</button>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function render() { renderStats(); renderTabs(); renderList(); }
+
+  // ── Add ──
+  async function addItem() {
+    const name     = document.getElementById("addName").value.trim();
+    const price    = parseFloat(document.getElementById("addPrice").value);
+    const category = document.getElementById("addCategory").value.trim();
+    if (!name)                    { toast("Please enter an item name.", "error"); return; }
+    if (isNaN(price) || price < 0){ toast("Please enter a valid price.", "error"); return; }
+    if (!category)                { toast("Please enter a category.", "error"); return; }
+
+    const btn = document.getElementById("addBtn");
+    btn.disabled = true; btn.textContent = "Saving…";
+    toast("Saving to menu…", "info");
+
+    const newId = menuItems.length ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
+    const updated = [...menuItems, { id: newId, name, price, category }];
+
+    try {
+      await saveMenu(updated);
+      menuItems = updated;
+      document.getElementById("addName").value = "";
+      document.getElementById("addPrice").value = "";
+      document.getElementById("addCategory").value = "";
+      toast(`"${name}" added successfully! ✅`);
+      render();
+    } catch(e) {
+      toast("Failed to save. Check your connection.", "error");
+    }
+    btn.disabled = false; btn.textContent = "Add to Menu";
+  }
+
+  // ── Delete ──
+  async function deleteItem(id) {
+    const item = menuItems.find(i => i.id === id);
+    if (!item || !confirm(`Delete "${item.name}"?`)) return;
+    const updated = menuItems.filter(i => i.id !== id);
+    toast("Deleting…", "info");
+    try {
+      await saveMenu(updated);
+      menuItems = updated;
+      toast(`"${item.name}" deleted.`);
+      render();
+    } catch(e) {
+      toast("Failed to delete. Try again.", "error");
+    }
+  }
+
+  // ── Edit ──
+  function openEdit(id) {
+    const item = menuItems.find(i => i.id === id);
+    if (!item) return;
+    editingId = id;
+    document.getElementById("editName").value     = item.name;
+    document.getElementById("editPrice").value    = item.price;
+    document.getElementById("editCategory").value = item.category;
+    document.getElementById("editOverlay").classList.add("open");
+  }
+
+  function closeEdit() {
+    editingId = null;
+    document.getElementById("editOverlay").classList.remove("open");
+  }
+
+  async function saveEdit() {
+    const name     = document.getElementById("editName").value.trim();
+    const price    = parseFloat(document.getElementById("editPrice").value);
+    const category = document.getElementById("editCategory").value.trim();
+    if (!name || isNaN(price) || !category) { toast("Please fill all fields.", "error"); return; }
+
+    const btn = document.getElementById("saveEditBtn");
+    btn.disabled = true; btn.textContent = "Saving…";
+
+    const updated = menuItems.map(i => i.id === editingId ? { ...i, name, price, category } : i);
+    try {
+      await saveMenu(updated);
+      menuItems = updated;
+      toast(`"${name}" updated! ✅`);
+      closeEdit();
+      render();
+    } catch(e) {
+      toast("Failed to save. Try again.", "error");
+    }
+    btn.disabled = false; btn.textContent = "Save Changes";
+  }
+
+  document.getElementById("editOverlay").addEventListener("click", function(e) {
+    if (e.target === this) closeEdit();
+  });
+
+  // ── Init ──
+  (async () => {
+    try {
+      menuItems = await fetchMenu();
+      render();
+    } catch(e) {
+      document.getElementById("itemList").innerHTML = '<div class="empty-list">Could not load menu. Check your connection.</div>';
+    }
+  })();
+</script>
+</body>
+</html>
