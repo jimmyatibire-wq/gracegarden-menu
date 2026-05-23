@@ -27,10 +27,9 @@
     .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-grid .full { grid-column: 1 / -1; }
     label { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
-    input, select { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-family: 'Lato', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; }
-    input:focus, select:focus { border-color: var(--gold); }
+    input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-family: 'Lato', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: var(--gold); }
     input::placeholder { color: rgba(160,176,200,0.5); }
-    select option { background: var(--navy-light); }
     .btn-primary { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0b1f3a; border: none; border-radius: 10px; font-family: 'Lato', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
     .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
     .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
@@ -38,7 +37,7 @@
     .btn-danger:hover { background: rgba(224,85,85,0.15); }
     .btn-edit { background: transparent; border: 1px solid rgba(240,192,64,0.4); color: var(--gold-bright); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; margin-right: 6px; }
     .btn-edit:hover { background: rgba(240,192,64,0.1); }
-    #toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; z-index: 999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; pointer-events: none; }
+    #toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; z-index: 999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 280px; text-align: center; }
     #toast.show { transform: translateY(0); opacity: 1; }
     #toast.success { background: var(--success); color: #0b1f3a; }
     #toast.error { background: var(--danger); color: white; }
@@ -96,7 +95,6 @@
 
 <div class="container">
   <div class="stats" id="stats"></div>
-
   <div class="card">
     <h2>➕ Add Menu Item</h2>
     <div class="form-grid">
@@ -106,7 +104,6 @@
     </div>
     <button class="btn-primary" id="addBtn" onclick="addItem()">Add to Menu</button>
   </div>
-
   <div class="card">
     <h2>📋 Current Menu</h2>
     <div class="tabs" id="tabs"></div>
@@ -115,33 +112,52 @@
 </div>
 
 <script>
-  const BIN_ID  = "6a1048156610dd3ae8894989";
-  const API_KEY = "$2a$10$DvPghXaVA8aQSlzE2StfOOgUT1XrMj1p0paWE.I6HOCjncd3.OQ5S";
-  const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+  const GITHUB_USER  = "jimmyatibire-wq";
+  const GITHUB_REPO  = "gracegarden-menu";
+  const GITHUB_FILE  = "menu.json";
+  const GITHUB_TOKEN = "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";
+  const API_BASE     = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
   let menuItems = [];
+  let fileSHA   = "";   // GitHub needs the current SHA to update a file
   let activeFilter = "All";
-  let editingId = null;
+  let editingId    = null;
 
-  // ── JSONBin helpers ──
+  // ── GitHub helpers ──
   async function fetchMenu() {
-    const res = await fetch(BIN_URL + "/latest", {
-      headers: { "X-Master-Key": API_KEY }
+    const res = await fetch(API_BASE, {
+      headers: {
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
     });
+    if (!res.ok) throw new Error("Fetch failed");
     const json = await res.json();
-    return json.record;
+    fileSHA = json.sha;                          // store SHA for updates
+    return JSON.parse(atob(json.content));
   }
 
   async function saveMenu(data) {
-    const res = await fetch(BIN_URL, {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    const res = await fetch(API_BASE, {
       method: "PUT",
       headers: {
-        "Content-Type": "application/json",
-        "X-Master-Key": API_KEY
+        "Authorization": `token ${GITHUB_TOKEN}`,
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        message: "Update menu via admin panel",
+        content: content,
+        sha: fileSHA
+      })
     });
-    if (!res.ok) throw new Error("Save failed");
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message || "Save failed");
+    }
+    const result = await res.json();
+    fileSHA = result.content.sha;  // update SHA after successful save
   }
 
   // ── Toast ──
@@ -149,14 +165,10 @@
     const el = document.getElementById("toast");
     el.textContent = msg;
     el.className = "show " + type;
-    setTimeout(() => { el.className = ""; }, 3000);
+    setTimeout(() => { el.className = ""; }, 3200);
   }
 
   // ── Render ──
-  function getCategories() {
-    return ["All", ...new Set(menuItems.map(i => i.category))];
-  }
-
   function renderStats() {
     const cats = new Set(menuItems.map(i => i.category));
     const minPrice = menuItems.length ? Math.min(...menuItems.map(i => i.price)) : 0;
@@ -168,7 +180,8 @@
   }
 
   function renderTabs() {
-    document.getElementById("tabs").innerHTML = getCategories().map(c =>
+    const cats = ["All", ...new Set(menuItems.map(i => i.category))];
+    document.getElementById("tabs").innerHTML = cats.map(c =>
       `<button class="tab ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
     ).join("");
     const dl = document.getElementById("catList");
@@ -203,15 +216,15 @@
     const name     = document.getElementById("addName").value.trim();
     const price    = parseFloat(document.getElementById("addPrice").value);
     const category = document.getElementById("addCategory").value.trim();
-    if (!name)                    { toast("Please enter an item name.", "error"); return; }
-    if (isNaN(price) || price < 0){ toast("Please enter a valid price.", "error"); return; }
-    if (!category)                { toast("Please enter a category.", "error"); return; }
+    if (!name)                     { toast("Please enter an item name.", "error"); return; }
+    if (isNaN(price) || price < 0) { toast("Please enter a valid price.", "error"); return; }
+    if (!category)                 { toast("Please enter a category.", "error"); return; }
 
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = "Saving…";
     toast("Saving to menu…", "info");
 
-    const newId = menuItems.length ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
+    const newId  = menuItems.length ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
     const updated = [...menuItems, { id: newId, name, price, category }];
 
     try {
@@ -220,10 +233,10 @@
       document.getElementById("addName").value = "";
       document.getElementById("addPrice").value = "";
       document.getElementById("addCategory").value = "";
-      toast(`"${name}" added successfully! ✅`);
+      toast(`"${name}" added! ✅`);
       render();
     } catch(e) {
-      toast("Failed to save. Check your connection.", "error");
+      toast("Failed to save: " + e.message, "error");
     }
     btn.disabled = false; btn.textContent = "Add to Menu";
   }
@@ -240,7 +253,7 @@
       toast(`"${item.name}" deleted.`);
       render();
     } catch(e) {
-      toast("Failed to delete. Try again.", "error");
+      toast("Failed to delete: " + e.message, "error");
     }
   }
 
@@ -277,7 +290,7 @@
       closeEdit();
       render();
     } catch(e) {
-      toast("Failed to save. Try again.", "error");
+      toast("Failed to save: " + e.message, "error");
     }
     btn.disabled = false; btn.textContent = "Save Changes";
   }
@@ -293,6 +306,7 @@
       render();
     } catch(e) {
       document.getElementById("itemList").innerHTML = '<div class="empty-list">Could not load menu. Check your connection.</div>';
+      toast("Could not connect to GitHub.", "error");
     }
   })();
 </script>

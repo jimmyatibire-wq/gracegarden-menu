@@ -60,19 +60,24 @@
 </div>
 <div class="admin-link"><a href="admin.html">staff</a></div>
 <script>
-  const BIN_ID  = "6a1048156610dd3ae8894989";
-  const API_KEY = "$2a$10$DvPghXaVA8aQSlzE2StfOOgUT1XrMj1p0paWE.I6HOCjncd3.OQ5S";
-  const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+  const GITHUB_USER  = "jimmyatibire-wq";
+  const GITHUB_REPO  = "gracegarden-menu";
+  const GITHUB_FILE  = "menu.json";
+  const GITHUB_TOKEN = "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";
+  const API_BASE     = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
   let allItems = [];
 
   async function loadMenu() {
     try {
-      const res = await fetch(BIN_URL, {
-        headers: { "X-Master-Key": API_KEY }
+      const res = await fetch(API_BASE, {
+        headers: {
+          "Authorization": `token ${GITHUB_TOKEN}`,
+          "Accept": "application/vnd.github.v3+json"
+        }
       });
       const json = await res.json();
-      allItems = json.record;
+      allItems = JSON.parse(atob(json.content));
       renderMenu(allItems);
     } catch(e) {
       document.getElementById("menu").innerHTML = '<div class="loading"><span>Could not load menu. Please check your connection.</span></div>';
