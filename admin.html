@@ -40,8 +40,8 @@
     #toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; z-index: 999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 280px; text-align: center; }
     #toast.show { transform: translateY(0); opacity: 1; }
     #toast.success { background: var(--success); color: #0b1f3a; }
-    #toast.error { background: var(--danger); color: white; }
-    #toast.info { background: var(--gold); color: #0b1f3a; }
+    #toast.error   { background: var(--danger);  color: white; }
+    #toast.info    { background: var(--gold);     color: #0b1f3a; }
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
     .tab { padding: 6px 14px; border-radius: 50px; border: 1px solid rgba(212,160,23,0.3); background: transparent; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: all 0.15s; }
     .tab.active, .tab:hover { background: rgba(212,160,23,0.15); color: var(--gold-bright); border-color: var(--gold); }
@@ -112,52 +112,58 @@
 </div>
 
 <script>
-  const GITHUB_USER  = "jimmyatibire-wq";
-  const GITHUB_REPO  = "gracegarden-menu";
-  const GITHUB_FILE  = "menu.json";
-  const GITHUB_TOKEN = "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";
-  const API_BASE     = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+  const FB = "https://grace-garden-a30cc-default-rtdb.firebaseio.com";
 
-  let menuItems = [];
-  let fileSHA   = "";   // GitHub needs the current SHA to update a file
+  let menuItems    = [];   // array of { _key, name, price, category }
   let activeFilter = "All";
-  let editingId    = null;
+  let editingKey   = null;
 
-  // ── GitHub helpers ──
-  async function fetchMenu() {
-    const res = await fetch(API_BASE, {
-      headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
-        "Accept": "application/vnd.github.v3+json"
-      }
-    });
-    if (!res.ok) throw new Error("Fetch failed");
-    const json = await res.json();
-    fileSHA = json.sha;                          // store SHA for updates
-    return JSON.parse(atob(json.content));
+  // ── Firebase helpers ──
+  async function fbGet() {
+    const res  = await fetch(`${FB}/menu.json`);
+    if (!res.ok) throw new Error("Could not reach Firebase");
+    const data = await res.json();
+    return data
+      ? Object.entries(data).map(([key, val]) => ({ _key: key, ...val }))
+      : [];
   }
 
-  async function saveMenu(data) {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-    const res = await fetch(API_BASE, {
-      method: "PUT",
-      headers: {
-        "Authorization": `token ${GITHUB_TOKEN}`,
-        "Accept": "application/vnd.github.v3+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        message: "Update menu via admin panel",
-        content: content,
-        sha: fileSHA
-      })
+  async function fbPost(item) {
+    // POST creates a new entry with a Firebase-generated key
+    const res = await fetch(`${FB}/menu.json`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: item.name, price: item.price, category: item.category })
     });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "Save failed");
-    }
-    const result = await res.json();
-    fileSHA = result.content.sha;  // update SHA after successful save
+    if (!res.ok) throw new Error("Add failed");
+    return await res.json(); // { name: "<newKey>" }
+  }
+
+  async function fbPatch(key, item) {
+    const res = await fetch(`${FB}/menu/${key}.json`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: item.name, price: item.price, category: item.category })
+    });
+    if (!res.ok) throw new Error("Update failed");
+  }
+
+  async function fbDelete(key) {
+    const res = await fetch(`${FB}/menu/${key}.json`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Delete failed");
+  }
+
+  // ── Seed default menu if Firebase is empty ──
+  async function seedIfEmpty() {
+    const defaults = [
+      { name: "Jollof Rice with Chicken",  price: 50, category: "Rice Dishes"  },
+      { name: "Fried Rice with Chicken",   price: 50, category: "Rice Dishes"  },
+      { name: "Banku with Tilapia",        price: 70, category: "Local Dishes" },
+      { name: "Fufu with Light Soup",      price: 65, category: "Local Dishes" },
+      { name: "Coca Cola",                 price: 10, category: "Drinks"       },
+      { name: "Bottled Water",             price: 5,  category: "Drinks"       }
+    ];
+    for (const item of defaults) await fbPost(item);
   }
 
   // ── Toast ──
@@ -193,7 +199,7 @@
   function renderList() {
     const filtered = activeFilter === "All" ? menuItems : menuItems.filter(i => i.category === activeFilter);
     const el = document.getElementById("itemList");
-    if (filtered.length === 0) { el.innerHTML = '<div class="empty-list">No items in this category yet.</div>'; return; }
+    if (!filtered.length) { el.innerHTML = '<div class="empty-list">No items in this category yet.</div>'; return; }
     el.innerHTML = filtered.map(item => `
       <div class="item-row">
         <div class="item-info">
@@ -202,8 +208,8 @@
         </div>
         <div class="item-actions">
           <span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>
-          <button class="btn-edit" onclick="openEdit(${item.id})">Edit</button>
-          <button class="btn-danger" onclick="deleteItem(${item.id})">✕</button>
+          <button class="btn-edit" onclick="openEdit('${item._key}')">Edit</button>
+          <button class="btn-danger" onclick="deleteItem('${item._key}')">✕</button>
         </div>
       </div>
     `).join("");
@@ -222,34 +228,30 @@
 
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = "Saving…";
-    toast("Saving to menu…", "info");
-
-    const newId  = menuItems.length ? Math.max(...menuItems.map(i => i.id)) + 1 : 1;
-    const updated = [...menuItems, { id: newId, name, price, category }];
+    toast("Adding item…", "info");
 
     try {
-      await saveMenu(updated);
-      menuItems = updated;
-      document.getElementById("addName").value = "";
-      document.getElementById("addPrice").value = "";
+      const result = await fbPost({ name, price, category });
+      menuItems.push({ _key: result.name, name, price, category });
+      document.getElementById("addName").value     = "";
+      document.getElementById("addPrice").value    = "";
       document.getElementById("addCategory").value = "";
       toast(`"${name}" added! ✅`);
       render();
     } catch(e) {
-      toast("Failed to save: " + e.message, "error");
+      toast("Failed to add: " + e.message, "error");
     }
     btn.disabled = false; btn.textContent = "Add to Menu";
   }
 
   // ── Delete ──
-  async function deleteItem(id) {
-    const item = menuItems.find(i => i.id === id);
+  async function deleteItem(key) {
+    const item = menuItems.find(i => i._key === key);
     if (!item || !confirm(`Delete "${item.name}"?`)) return;
-    const updated = menuItems.filter(i => i.id !== id);
     toast("Deleting…", "info");
     try {
-      await saveMenu(updated);
-      menuItems = updated;
+      await fbDelete(key);
+      menuItems = menuItems.filter(i => i._key !== key);
       toast(`"${item.name}" deleted.`);
       render();
     } catch(e) {
@@ -258,10 +260,10 @@
   }
 
   // ── Edit ──
-  function openEdit(id) {
-    const item = menuItems.find(i => i.id === id);
+  function openEdit(key) {
+    const item = menuItems.find(i => i._key === key);
     if (!item) return;
-    editingId = id;
+    editingKey = key;
     document.getElementById("editName").value     = item.name;
     document.getElementById("editPrice").value    = item.price;
     document.getElementById("editCategory").value = item.category;
@@ -269,7 +271,7 @@
   }
 
   function closeEdit() {
-    editingId = null;
+    editingKey = null;
     document.getElementById("editOverlay").classList.remove("open");
   }
 
@@ -282,15 +284,15 @@
     const btn = document.getElementById("saveEditBtn");
     btn.disabled = true; btn.textContent = "Saving…";
 
-    const updated = menuItems.map(i => i.id === editingId ? { ...i, name, price, category } : i);
     try {
-      await saveMenu(updated);
-      menuItems = updated;
+      await fbPatch(editingKey, { name, price, category });
+      const idx = menuItems.findIndex(i => i._key === editingKey);
+      if (idx > -1) menuItems[idx] = { ...menuItems[idx], name, price, category };
       toast(`"${name}" updated! ✅`);
       closeEdit();
       render();
     } catch(e) {
-      toast("Failed to save: " + e.message, "error");
+      toast("Failed to update: " + e.message, "error");
     }
     btn.disabled = false; btn.textContent = "Save Changes";
   }
@@ -302,11 +304,17 @@
   // ── Init ──
   (async () => {
     try {
-      menuItems = await fetchMenu();
+      menuItems = await fbGet();
+      if (menuItems.length === 0) {
+        toast("Setting up menu for first time…", "info");
+        await seedIfEmpty();
+        menuItems = await fbGet();
+      }
       render();
     } catch(e) {
-      document.getElementById("itemList").innerHTML = '<div class="empty-list">Could not load menu. Check your connection.</div>';
-      toast("Could not connect to GitHub.", "error");
+      document.getElementById("itemList").innerHTML =
+        '<div class="empty-list">Could not connect to database. Check your internet connection.</div>';
+      toast("Connection failed.", "error");
     }
   })();
 </script>

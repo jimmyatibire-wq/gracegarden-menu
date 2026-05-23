@@ -58,37 +58,30 @@
   <a class="btn" href="https://wa.me/233249320157">💬 WhatsApp</a>
   <a class="btn" href="tel:+233249320157">📞 Call Waiter</a>
 </div>
-<div class="admin-link"><a href="admin.html">.</a></div>
+<div class="admin-link"><a href="admin.html">staff</a></div>
 <script>
-  const GITHUB_USER  = "jimmyatibire-wq";
-  const GITHUB_REPO  = "gracegarden-menu";
-  const GITHUB_FILE  = "menu.json";
-  const GITHUB_TOKEN = "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";
-  const API_BASE     = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
+  const FB = "https://grace-garden-a30cc-default-rtdb.firebaseio.com";
 
   let allItems = [];
 
   async function loadMenu() {
     try {
-      const res = await fetch(API_BASE, {
-        headers: {
-          "Authorization": `token ${GITHUB_TOKEN}`,
-          "Accept": "application/vnd.github.v3+json"
-        }
-      });
-      const json = await res.json();
-      allItems = JSON.parse(atob(json.content));
+      const res  = await fetch(`${FB}/menu.json`);
+      const data = await res.json();
+      // Firebase returns an object with keys, convert to array
+      allItems = data ? Object.entries(data).map(([key, val]) => ({ _key: key, ...val })) : [];
       renderMenu(allItems);
     } catch(e) {
-      document.getElementById("menu").innerHTML = '<div class="loading"><span>Could not load menu. Please check your connection.</span></div>';
+      document.getElementById("menu").innerHTML =
+        '<div class="loading"><span>Could not load menu. Please check your connection.</span></div>';
     }
   }
 
   function renderMenu(items) {
     const container = document.getElementById("menu");
-    const empty = document.getElementById("empty");
+    const empty     = document.getElementById("empty");
     container.innerHTML = "";
-    if (items.length === 0) { empty.style.display = "block"; return; }
+    if (!items.length) { empty.style.display = "block"; return; }
     empty.style.display = "none";
     const grouped = {};
     items.forEach(item => {
@@ -112,7 +105,9 @@
   function filterMenu(query) {
     if (!query.trim()) { renderMenu(allItems); return; }
     const q = query.toLowerCase();
-    renderMenu(allItems.filter(i => i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)));
+    renderMenu(allItems.filter(i =>
+      i.name.toLowerCase().includes(q) || i.category.toLowerCase().includes(q)
+    ));
   }
 
   loadMenu();
