@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grace Garden – Directory Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --navy:#0b1f3a;--navy2:#132b4f;--navy3:#1a3560;
+      --gold:#d4a017;--gold2:#f0c040;
+      --cream:#f5f0e8;--muted:#a0b0c8;
+      --danger:#e05555;--success:#3ecf8e;
+    }
+    body{background:var(--navy);color:var(--cream);font-family:'Lato',sans-serif;min-height:100vh;padding-bottom:60px;}
+
+    header{
+      background:linear-gradient(180deg,#060f1e 0%,var(--navy) 100%);
+      padding:18px 18px 16px;border-bottom:1px solid rgba(212,160,23,0.3);
+      display:flex;align-items:center;gap:12px;
+    }
+    header img{width:44px;height:44px;border-radius:50%;}
+    header .htxt h1{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--cream);}
+    header .htxt p{font-size:0.65rem;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;font-weight:700;}
+    .hright{margin-left:auto;}
+    .hright a{color:var(--muted);text-decoration:none;font-size:0.8rem;}
+    .hright a:hover{color:var(--gold);}
+
+    .container{max-width:720px;margin:0 auto;padding:18px 16px;}
+
+    .card{background:var(--navy2);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;margin-bottom:20px;}
+    .card h2{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold2);margin-bottom:14px;}
+
+    label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+    input,select,textarea{
+      width:100%;padding:10px 13px;background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);border-radius:9px;
+      color:var(--cream);font-family:'Lato',sans-serif;font-size:0.88rem;
+      outline:none;transition:border-color 0.2s;resize:vertical;
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+    input::placeholder,textarea::placeholder{color:rgba(160,176,200,0.45);}
+    select option{background:var(--navy2);}
+
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .form-grid .full{grid-column:1/-1;}
+
+    .btn-primary{
+      width:100%;margin-top:12px;padding:12px;
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#0b1f3a;border:none;border-radius:9px;
+      font-family:'Lato',sans-serif;font-weight:700;font-size:0.9rem;
+      cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;
+    }
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(212,160,23,0.4);}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+    .stat{background:var(--navy2);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;text-align:center;}
+    .stat .n{font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold2);font-weight:700;}
+    .stat .l{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .tab{padding:5px 12px;border-radius:50px;border:1px solid rgba(212,160,23,0.3);background:transparent;color:var(--muted);font-size:0.75rem;cursor:pointer;font-family:'Lato',sans-serif;transition:all 0.15s;}
+    .tab.active,.tab:hover{background:rgba(212,160,23,0.15);color:var(--gold2);border-color:var(--gold);}
+
+    .item-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+    .item-row:last-child{border-bottom:none;}
+    .item-icon{font-size:1.1rem;margin-top:2px;flex-shrink:0;}
+    .item-info{flex:1;min-width:0;}
+    .item-title{font-size:0.9rem;color:var(--cream);}
+    .item-meta{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+    .item-preview{font-size:0.72rem;color:rgba(160,176,200,0.6);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px;}
+    .item-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;}
+
+    .btn-edit{background:transparent;border:1px solid rgba(240,192,64,0.4);color:var(--gold2);padding:5px 10px;border-radius:7px;font-size:0.75rem;cursor:pointer;font-family:'Lato',sans-serif;transition:background 0.15s;}
+    .btn-edit:hover{background:rgba(240,192,64,0.1);}
+    .btn-danger{background:transparent;border:1px solid rgba(224,85,85,0.4);color:var(--danger);padding:5px 10px;border-radius:7px;font-size:0.75rem;cursor:pointer;font-family:'Lato',sans-serif;transition:background 0.15s;}
+    .btn-danger:hover{background:rgba(224,85,85,0.15);}
+
+    .empty{text-align:center;padding:24px;color:var(--muted);font-style:italic;font-size:0.88rem;}
+
+    /* toast */
+    #toast{position:fixed;top:18px;right:18px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:0.85rem;z-index:999;transform:translateY(-70px);opacity:0;transition:all 0.3s;pointer-events:none;max-width:260px;text-align:center;}
+    #toast.show{transform:translateY(0);opacity:1;}
+    #toast.success{background:var(--success);color:#0b1f3a;}
+    #toast.error{background:var(--danger);color:#fff;}
+    #toast.info{background:var(--gold);color:#0b1f3a;}
+
+    /* modal */
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:16px;}
+    .overlay.open{display:flex;}
+    .modal{background:var(--navy3);border:1px solid rgba(212,160,23,0.3);border-radius:18px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+    .modal h3{font-family:'Cormorant Garamond',serif;color:var(--gold2);margin-bottom:16px;font-size:1.1rem;}
+    .modal-field{margin-bottom:11px;}
+    .modal-actions{display:flex;gap:10px;margin-top:14px;}
+    .btn-secondary{flex:1;padding:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--cream);cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
+    .btn-save{flex:2;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;color:#0b1f3a;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
+    .btn-save:disabled{opacity:0.5;cursor:not-allowed;}
+
+    /* icon picker */
+    .icon-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+    .icon-opt{width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+    .icon-opt.sel,.icon-opt:hover{background:rgba(212,160,23,0.2);border-color:var(--gold);}
+  </style>
+</head>
+<body>
+
+<header>
+  <img src="logo.png" alt="Logo" onerror="this.style.display='none'"/>
+  <div class="htxt">
+    <h1>Directory Admin</h1>
+    <p>Grace Garden Hotel</p>
+  </div>
+  <div class="hright"><a href="directory.html">← View Directory</a></div>
+</header>
+
+<div id="toast"></div>
+
+<!-- Edit Modal -->
+<div class="overlay" id="editOverlay">
+  <div class="modal">
+    <h3>✏️ Edit Section</h3>
+    <div class="modal-field"><label>Section Title</label><input id="eTitle" placeholder="e.g. Room Service"/></div>
+    <div class="modal-field"><label>Category</label><input id="eCategory" list="catList2" placeholder="e.g. Room Services"/><datalist id="catList2"></datalist></div>
+    <div class="modal-field">
+      <label>Icon</label>
+      <div class="icon-grid" id="iconGrid"></div>
+    </div>
+    <div class="modal-field"><label>Content</label><textarea id="eContent" rows="7" placeholder="Section content…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeEdit()">Cancel</button>
+      <button class="btn-save" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats" id="stats"></div>
+
+  <div class="card">
+    <h2>➕ Add New Section</h2>
+    <div class="form-grid">
+      <div class="full"><label>Section Title</label><input id="aTitle" placeholder="e.g. Swimming Pool Hours"/></div>
+      <div><label>Category</label><input id="aCategory" list="catList" placeholder="e.g. Facilities"/><datalist id="catList"></datalist></div>
+      <div><label>Icon (emoji)</label><input id="aIcon" placeholder="e.g. 🏊" maxlength="4"/></div>
+      <div class="full"><label>Content</label><textarea id="aContent" rows="5" placeholder="Enter section content here…"></textarea></div>
+    </div>
+    <button class="btn-primary" id="addBtn" onclick="addSection()">Add Section</button>
+  </div>
+
+  <div class="card">
+    <h2>📋 Directory Sections</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="itemList"><div class="empty">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+const FB = "https://grace-garden-a30cc-default-rtdb.firebaseio.com";
+const API_KEY = "$2a$10$KZmf2ZR6eu9lmoKW4vnEHOglBa956g5P61xhRyl4ZRdiPO4K2Wrx.";
+
+const ICONS = ["🛎️","🔒","⏰","📺","🌐","☕","🛁","🏊","🏋️","🍽️","👔","🧳","🏢","🧴","💳","🔌","📞","🌅","🚨","📌","🍳","🌡️","🚿","🛏️","🌿","🎭","🎵","💡","🔧","🚗","✈️","🎁","📋","🏨","🔑"];
+
+let sections = [];
+let activeFilter = "All";
+let editingKey = null;
+let selectedIcon = "📌";
+
+// Firebase helpers
+async function fbGet() {
+  const res = await fetch(`${FB}/directory.json`);
+  if (!res.ok) throw new Error("Fetch failed");
+  const data = await res.json();
+  return data ? Object.entries(data).map(([k,v]) => ({_key:k,...v})).sort((a,b)=>(a.id||0)-(b.id||0)) : [];
+}
+async function fbPost(item) {
+  const res = await fetch(`${FB}/directory.json`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(item)
+  });
+  if (!res.ok) throw new Error("Add failed");
+  return await res.json();
+}
+async function fbPatch(key, item) {
+  const res = await fetch(`${FB}/directory/${key}.json`, {
+    method:"PATCH", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify(item)
+  });
+  if (!res.ok) throw new Error("Update failed");
+}
+async function fbDelete(key) {
+  const res = await fetch(`${FB}/directory/${key}.json`, { method:"DELETE" });
+  if (!res.ok) throw new Error("Delete failed");
+}
+
+// Toast
+function toast(msg, type="success") {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.className = "show "+type;
+  setTimeout(() => el.className = "", 3200);
+}
+
+// Stats
+function renderStats() {
+  const cats = new Set(sections.map(s=>s.category));
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="n">${sections.length}</div><div class="l">Sections</div></div>
+    <div class="stat"><div class="n">${cats.size}</div><div class="l">Categories</div></div>
+    <div class="stat"><div class="n">✓</div><div class="l">Live</div></div>
+  `;
+}
+
+// Tabs
+function renderTabs() {
+  const cats = ["All",...new Set(sections.map(s=>s.category))];
+  document.getElementById("tabs").innerHTML = cats.map(c =>
+    `<button class="tab ${c===activeFilter?'active':''}" onclick="setFilter('${c.replace(/'/g,"\\\'")}')">${c}</button>`
+  ).join("");
+  const dl = document.getElementById("catList");
+  dl.innerHTML = [...new Set(sections.map(s=>s.category))].map(c=>`<option value="${c}">`).join("");
+  const dl2 = document.getElementById("catList2");
+  if(dl2) dl2.innerHTML = dl.innerHTML;
+}
+function setFilter(cat){ activeFilter=cat; renderTabs(); renderList(); }
+
+// List
+function renderList() {
+  const filtered = activeFilter==="All" ? sections : sections.filter(s=>s.category===activeFilter);
+  const el = document.getElementById("itemList");
+  if (!filtered.length) { el.innerHTML='<div class="empty">No sections in this category.</div>'; return; }
+  el.innerHTML = filtered.map(s=>`
+    <div class="item-row">
+      <div class="item-icon">${s.icon||'📌'}</div>
+      <div class="item-info">
+        <div class="item-title">${s.title}</div>
+        <div class="item-meta">${s.category}</div>
+        <div class="item-preview">${(s.content||'').replace(/\n/g,' ')}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-edit" onclick="openEdit('${s._key}')">Edit</button>
+        <button class="btn-danger" onclick="deleteSection('${s._key}')">✕</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function render(){ renderStats(); renderTabs(); renderList(); }
+
+// Add
+async function addSection() {
+  const title = document.getElementById("aTitle").value.trim();
+  const category = document.getElementById("aCategory").value.trim();
+  const icon = document.getElementById("aIcon").value.trim() || "📌";
+  const content = document.getElementById("aContent").value.trim();
+  if (!title) { toast("Please enter a title.", "error"); return; }
+  if (!category) { toast("Please enter a category.", "error"); return; }
+  if (!content) { toast("Please enter content.", "error"); return; }
+
+  const btn = document.getElementById("addBtn");
+  btn.disabled=true; btn.textContent="Saving…";
+  toast("Adding section…","info");
+
+  const newId = sections.length ? Math.max(...sections.map(s=>s.id||0))+1 : 1;
+  try {
+    const result = await fbPost({ id:newId, title, category, icon, content });
+    sections.push({ _key:result.name, id:newId, title, category, icon, content });
+    ["aTitle","aCategory","aIcon","aContent"].forEach(id => document.getElementById(id).value="");
+    toast(`"${title}" added! ✅`);
+    render();
+  } catch(e) { toast("Failed to add: "+e.message,"error"); }
+  btn.disabled=false; btn.textContent="Add Section";
+}
+
+// Delete
+async function deleteSection(key) {
+  const s = sections.find(x=>x._key===key);
+  if (!s || !confirm(`Delete "${s.title}"?`)) return;
+  toast("Deleting…","info");
+  try {
+    await fbDelete(key);
+    sections = sections.filter(x=>x._key!==key);
+    toast(`"${s.title}" deleted.`);
+    render();
+  } catch(e) { toast("Failed to delete: "+e.message,"error"); }
+}
+
+// Edit modal
+function buildIconGrid(current) {
+  selectedIcon = current || "📌";
+  document.getElementById("iconGrid").innerHTML = ICONS.map(ic =>
+    `<div class="icon-opt ${ic===selectedIcon?'sel':''}" onclick="selectIcon('${ic}')">${ic}</div>`
+  ).join("");
+}
+function selectIcon(ic) {
+  selectedIcon = ic;
+  document.querySelectorAll(".icon-opt").forEach(el => el.classList.toggle("sel", el.textContent===ic));
+}
+
+function openEdit(key) {
+  const s = sections.find(x=>x._key===key);
+  if (!s) return;
+  editingKey = key;
+  document.getElementById("eTitle").value = s.title||"";
+  document.getElementById("eCategory").value = s.category||"";
+  document.getElementById("eContent").value = s.content||"";
+  buildIconGrid(s.icon||"📌");
+  document.getElementById("editOverlay").classList.add("open");
+}
+function closeEdit() {
+  editingKey = null;
+  document.getElementById("editOverlay").classList.remove("open");
+}
+async function saveEdit() {
+  const title = document.getElementById("eTitle").value.trim();
+  const category = document.getElementById("eCategory").value.trim();
+  const content = document.getElementById("eContent").value.trim();
+  if (!title||!category||!content) { toast("Please fill all fields.","error"); return; }
+
+  const btn = document.getElementById("saveEditBtn");
+  btn.disabled=true; btn.textContent="Saving…";
+
+  try {
+    await fbPatch(editingKey, { title, category, icon:selectedIcon, content });
+    const idx = sections.findIndex(x=>x._key===editingKey);
+    if (idx>-1) sections[idx] = {...sections[idx], title, category, icon:selectedIcon, content};
+    toast(`"${title}" updated! ✅`);
+    closeEdit(); render();
+  } catch(e) { toast("Failed to save: "+e.message,"error"); }
+  btn.disabled=false; btn.textContent="Save Changes";
+}
+
+document.getElementById("editOverlay").addEventListener("click", function(e){ if(e.target===this) closeEdit(); });
+
+// Init
+(async()=>{
+  try { sections = await fbGet(); render(); }
+  catch(e) { document.getElementById("itemList").innerHTML='<div class="empty">Could not connect. Check your internet.</div>'; toast("Connection failed.","error"); }
+})();
+</script>
+</body>
+</html>
