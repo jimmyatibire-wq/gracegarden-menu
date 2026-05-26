@@ -204,7 +204,7 @@
     const filtered = activeFilter === "All" ? menuItems : menuItems.filter(i => i.category === activeFilter);
     const el = document.getElementById("itemList");
     if (!filtered.length) { el.innerHTML = '<div class="empty-list">No items in this category yet.</div>'; return; }
-    el.innerHTML = filtered.map(item => `
+    el.innerHTML = filtered.map((item, idx) => `
       <div class="item-row">
         <div class="item-info">
           <div class="item-name">${item.name}</div>
@@ -212,6 +212,8 @@
         </div>
         <div class="item-actions">
           <span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>
+          <button class="btn-up" onclick="moveItem('${item._key}',-1)" ${idx===0?'disabled':''} title="Move up">▲</button>
+          <button class="btn-down" onclick="moveItem('${item._key}',1)" ${idx===filtered.length-1?'disabled':''} title="Move down">▼</button>
           <button class="btn-edit" onclick="openEdit('${item._key}')">Edit</button>
           <button class="btn-danger" onclick="deleteItem('${item._key}')">✕</button>
         </div>
