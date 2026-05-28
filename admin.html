@@ -149,12 +149,21 @@
   }
 
   async function fbPatch(key, item) {
+    const payload = { name: item.name, price: item.price, category: item.category };
+    if (item.extras !== undefined) payload.extras = item.extras;
     const res = await fetch(`${FB}/menu/${key}.json`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: item.name, price: item.price, category: item.category })
+      body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("Update failed");
+  }
+
+  // saveMenu: rewrite all items (used for reorder)
+  async function saveMenu(items) {
+    for (const item of items) {
+      await fbPatch(item._key, item);
+    }
   }
 
   async function fbDelete(key) {
@@ -282,16 +291,15 @@
     // load extras
     const extrasList = document.getElementById("extrasList");
     extrasList.innerHTML = "";
-    (item.extras || []).forEach(e => addExtraRow(e.name, e.price));
+    (item.extras || []).forEach(e => addExtraRow(e.name));
     document.getElementById("editOverlay").classList.add("open");
   }
 
-  function addExtraRow(name="", price="") {
+  function addExtraRow(name="") {
     const row = document.createElement("div");
     row.className = "extra-row-edit";
     row.innerHTML = `
-      <input placeholder="Option name (e.g. Extra Chicken)" value="${name}"/>
-      <input class="price-input" type="number" placeholder="Price" value="${price}"/>
+      <input class="extra-name-input" placeholder="e.g. Extra Chicken, Large Portion, No Pepper…" value="${name}" style="flex:1;"/>
       <button class="btn-remove-extra" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById("extrasList").appendChild(row);
   }
@@ -307,13 +315,20 @@
     const category = document.getElementById("editCategory").value.trim();
     if (!name || isNaN(price) || !category) { toast("Please fill all fields.", "error"); return; }
 
+    // collect extras (name only)
+    const extras = [];
+    document.querySelectorAll("#extrasList .extra-row-edit").forEach(row => {
+      const ename = row.querySelector('.extra-name-input').value.trim();
+      if (ename) extras.push({ name: ename });
+    });
+
     const btn = document.getElementById("saveEditBtn");
     btn.disabled = true; btn.textContent = "Saving…";
 
     try {
-      await fbPatch(editingKey, { name, price, category });
+      await fbPatch(editingKey, { name, price, category, extras });
       const idx = menuItems.findIndex(i => i._key === editingKey);
-      if (idx > -1) menuItems[idx] = { ...menuItems[idx], name, price, category };
+      if (idx > -1) menuItems[idx] = { ...menuItems[idx], name, price, category, extras };
       toast(`"${name}" updated! ✅`);
       closeEdit();
       render();
