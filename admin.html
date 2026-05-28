@@ -90,6 +90,11 @@
     <div class="modal-field"><label>Item Name</label><input id="editName" placeholder="e.g. Jollof Rice with Chicken"/></div>
     <div class="modal-field"><label>Price (GH₵)</label><input id="editPrice" type="number" placeholder="e.g. 50"/></div>
     <div class="modal-field"><label>Category</label><input id="editCategory" placeholder="e.g. Rice Dishes"/></div>
+    <div class="extras-section">
+      <h4>➕ Add-ons &amp; Options</h4>
+      <div id="extrasList"></div>
+      <button class="btn-add-extra" onclick="addExtraRow()">+ Add Option</button>
+    </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeEdit()">Cancel</button>
       <button class="btn-save" id="saveEditBtn" onclick="saveEdit()">Save Changes</button>
@@ -214,6 +219,7 @@
           <span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>
           <button class="btn-up" onclick="moveItem('${item._key}',-1)" ${idx===0?'disabled':''} title="Move up">▲</button>
           <button class="btn-down" onclick="moveItem('${item._key}',1)" ${idx===filtered.length-1?'disabled':''} title="Move down">▼</button>
+          ${item.extras && item.extras.length ? `<span class="extras-badge-count">${item.extras.length} extras</span>` : ''}
           <button class="btn-edit" onclick="openEdit('${item._key}')">Edit</button>
           <button class="btn-danger" onclick="deleteItem('${item._key}')">✕</button>
         </div>
@@ -273,7 +279,21 @@
     document.getElementById("editName").value     = item.name;
     document.getElementById("editPrice").value    = item.price;
     document.getElementById("editCategory").value = item.category;
+    // load extras
+    const extrasList = document.getElementById("extrasList");
+    extrasList.innerHTML = "";
+    (item.extras || []).forEach(e => addExtraRow(e.name, e.price));
     document.getElementById("editOverlay").classList.add("open");
+  }
+
+  function addExtraRow(name="", price="") {
+    const row = document.createElement("div");
+    row.className = "extra-row-edit";
+    row.innerHTML = `
+      <input placeholder="Option name (e.g. Extra Chicken)" value="${name}"/>
+      <input class="price-input" type="number" placeholder="Price" value="${price}"/>
+      <button class="btn-remove-extra" onclick="this.parentElement.remove()">✕</button>`;
+    document.getElementById("extrasList").appendChild(row);
   }
 
   function closeEdit() {
