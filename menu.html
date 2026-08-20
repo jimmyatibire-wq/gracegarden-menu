@@ -149,7 +149,7 @@
       const res  = await fetch(`${FB}/menu.json`);
       const data = await res.json();
       // Firebase returns an object with keys, convert to array
-      allItems = data ? Object.entries(data).map(([key, val]) => ({ _key: key, ...val })) : [];
+      allItems = data ? Object.entries(data).map(([key, val]) => ({ _key: key, ...val })).sort((a,b) => (a.id||0) - (b.id||0)) : [];
       renderMenu(allItems);
     } catch(e) {
       document.getElementById("menu").innerHTML =
