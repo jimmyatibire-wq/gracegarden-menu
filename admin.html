@@ -76,6 +76,13 @@
     .btn-add-extra{background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);color:var(--gold2);padding:7px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Lato',sans-serif;margin-top:4px;width:100%;}
     .btn-add-extra:hover{background:rgba(212,160,23,0.18);}
     .modal-actions{display:flex;gap:10px;margin-top:14px;}
+    .cat-row{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(212,160,23,0.15);border-radius:10px;margin-bottom:8px;}
+    .cat-row:last-child{margin-bottom:0;}
+    .cat-icon{font-size:1.2rem;width:36px;text-align:center;flex-shrink:0;}
+    .cat-info{flex:1;}
+    .cat-name{font-size:0.92rem;color:var(--cream);font-weight:700;}
+    .cat-count{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+    .cat-actions{display:flex;gap:5px;flex-shrink:0;}
     .btn-secondary{flex:1;padding:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--cream);cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
     .btn-save{flex:2;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;color:#0b1f3a;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
     .btn-save:disabled{opacity:0.5;cursor:not-allowed;}
@@ -124,6 +131,13 @@
       <div><label>Category</label><input id="addCategory" list="catList" placeholder="e.g. Local Dishes"/><datalist id="catList"></datalist></div>
     </div>
     <button class="btn-primary" id="addBtn" onclick="addItem()">Add to Menu</button>
+  </div>
+
+  <!-- Category Reorder -->
+  <div class="card">
+    <h2>↕️ Reorder Categories</h2>
+    <p style="font-size:0.73rem;color:var(--muted);margin-bottom:14px;">Move entire categories up or down. All items in the category move together.</p>
+    <div id="catReorderList"><div class="empty-list">Loading…</div></div>
   </div>
 
   <!-- Menu List -->
@@ -233,7 +247,96 @@
       </div>`).join("");
   }
 
-  function render() { renderStats(); renderTabs(); renderList(); }
+  function getCategoryOrder() {
+    // Get unique categories in their current order (based on item id ordering)
+    const seen = [];
+    menuItems.forEach(item => {
+      if (!seen.includes(item.category)) seen.push(item.category);
+    });
+    return seen;
+  }
+
+  function renderCategoryReorder() {
+    const cats = getCategoryOrder();
+    const el = document.getElementById("catReorderList");
+    if (!cats.length) { el.innerHTML = '<div class="empty-list">No categories yet.</div>'; return; }
+
+    // Category icons map
+    const icons = {
+      "Rice Dishes":"🍚", "Local Dishes":"🍲", "Drinks":"🥤",
+      "Hot Beverages":"☕", "Grills & Continental":"🍗", "Soups & Starters":"🥗",
+      "Breakfast":"🌅", "Snacks":"🍟", "Desserts":"🍰"
+    };
+
+    el.innerHTML = cats.map((cat, idx) => {
+      const count = menuItems.filter(i => i.category === cat).length;
+      const icon = icons[cat] || "🍽️";
+      return `<div class="cat-row">
+        <div class="cat-icon">${icon}</div>
+        <div class="cat-info">
+          <div class="cat-name">${cat}</div>
+          <div class="cat-count">${count} item${count !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="cat-actions">
+          <button class="btn-up" onclick="moveCategory('${cat.replace(/'/g,"\'")}', -1)" ${idx===0?'disabled':''}>▲</button>
+          <button class="btn-down" onclick="moveCategory('${cat.replace(/'/g,"\'")}', 1)" ${idx===cats.length-1?'disabled':''}>▼</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  async function moveCategory(cat, direction) {
+    const cats = getCategoryOrder();
+    const idx = cats.indexOf(cat);
+    const swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= cats.length) return;
+
+    const catA = cats[idx];
+    const catB = cats[swapIdx];
+
+    // Get all items per category in current order
+    const itemsA = menuItems.filter(i => i.category === catA);
+    const itemsB = menuItems.filter(i => i.category === catB);
+    const others = menuItems.filter(i => i.category !== catA && i.category !== catB);
+
+    // Rebuild menuItems with swapped category order
+    // Find where catA and catB sit in the full list
+    const idxA = menuItems.findIndex(i => i.category === catA);
+    const idxB = menuItems.findIndex(i => i.category === catB);
+
+    let newOrder;
+    if (idxA < idxB) {
+      // catA comes first — moving down: put catB before catA
+      newOrder = menuItems.filter(i => i.category !== catA && i.category !== catB);
+      // insert catB items where catA was, then catA items where catB was
+      const insertAt = menuItems.filter((i,pos) => pos < idxA && i.category !== catA && i.category !== catB).length;
+      newOrder.splice(insertAt, 0, ...itemsB, ...itemsA);
+    } else {
+      // catB comes first — moving up: put catA before catB
+      newOrder = menuItems.filter(i => i.category !== catA && i.category !== catB);
+      const insertAt = menuItems.filter((i,pos) => pos < idxB && i.category !== catA && i.category !== catB).length;
+      newOrder.splice(insertAt, 0, ...itemsA, ...itemsB);
+    }
+
+    // Reassign ids based on new order
+    newOrder.forEach((item, i) => { item.id = i + 1; });
+    menuItems = newOrder;
+
+    toast("Saving category order…", "info");
+    try {
+      // Save all affected items (catA and catB items) with new ids
+      const toSave = [...itemsA, ...itemsB];
+      for (const item of toSave) {
+        await fbPatch(item._key, item);
+      }
+      toast(`"${cat}" moved! ✅`);
+      render();
+    } catch(e) {
+      toast("Failed: " + e.message, "error");
+    }
+  }
+
+  function render() { renderStats(); renderTabs(); renderList(); renderCategoryReorder(); }
 
   // ── Add ──
   async function addItem() {
