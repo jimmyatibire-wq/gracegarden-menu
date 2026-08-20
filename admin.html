@@ -3,95 +3,105 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Grace Garden – Admin</title>
+  <title>Grace Garden – Menu Admin</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy: #0b1f3a; --navy-light: #132b4f; --navy-card: #1a3560;
-      --gold: #d4a017; --gold-bright: #f0c040;
-      --white: #f5f0e8; --text-muted: #a0b0c8;
-      --danger: #e05555; --success: #3ecf8e;
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --navy:#0b1f3a;--navy2:#132b4f;--navy3:#1a3560;
+      --gold:#d4a017;--gold2:#f0c040;
+      --cream:#f5f0e8;--muted:#a0b0c8;
+      --danger:#e05555;--success:#3ecf8e;
     }
-    body { background: var(--navy); color: var(--white); font-family: 'Lato', sans-serif; min-height: 100vh; padding-bottom: 60px; }
-    header { background: linear-gradient(180deg, #060f1e 0%, var(--navy) 100%); padding: 22px 20px 18px; border-bottom: 1px solid rgba(212,160,23,0.3); display: flex; align-items: center; gap: 14px; }
-    header img { width: 50px; border-radius: 50%; }
-    header div h1 { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--white); }
-    header div p { font-size: 0.72rem; color: var(--gold); letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-top: 2px; }
-    .header-right { margin-left: auto; }
-    .header-right a { color: var(--text-muted); text-decoration: none; font-size: 0.82rem; }
-    .header-right a:hover { color: var(--gold); }
-    .container { max-width: 680px; margin: 0 auto; padding: 20px 16px; }
-    .card { background: var(--navy-light); border: 1px solid rgba(255,255,255,0.07); border-radius: 16px; padding: 22px; margin-bottom: 22px; }
-    .card h2 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold-bright); margin-bottom: 16px; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .form-grid .full { grid-column: 1 / -1; }
-    label { display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
-    input { width: 100%; padding: 11px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); font-family: 'Lato', sans-serif; font-size: 0.92rem; outline: none; transition: border-color 0.2s; }
-    input:focus { border-color: var(--gold); }
-    input::placeholder { color: rgba(160,176,200,0.5); }
-    .btn-primary { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); color: #0b1f3a; border: none; border-radius: 10px; font-family: 'Lato', sans-serif; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,160,23,0.45); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-danger { background: transparent; border: 1px solid rgba(224,85,85,0.4); color: var(--danger); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; }
-    .btn-danger:hover { background: rgba(224,85,85,0.15); }
-    .btn-edit { background: transparent; border: 1px solid rgba(240,192,64,0.4); color: var(--gold-bright); padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: background 0.15s; margin-right: 6px; }
-    .btn-edit:hover { background: rgba(240,192,64,0.1); }
-    #toast { position: fixed; top: 20px; right: 20px; padding: 12px 20px; border-radius: 10px; font-weight: 700; font-size: 0.88rem; z-index: 999; transform: translateY(-80px); opacity: 0; transition: all 0.3s; pointer-events: none; max-width: 280px; text-align: center; }
-    #toast.show { transform: translateY(0); opacity: 1; }
-    #toast.success { background: var(--success); color: #0b1f3a; }
-    #toast.error   { background: var(--danger);  color: white; }
-    #toast.info    { background: var(--gold);     color: #0b1f3a; }
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
-    .tab { padding: 6px 14px; border-radius: 50px; border: 1px solid rgba(212,160,23,0.3); background: transparent; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: all 0.15s; }
-    .tab.active, .tab:hover { background: rgba(212,160,23,0.15); color: var(--gold-bright); border-color: var(--gold); }
-    .item-row { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .item-row:last-child { border-bottom: none; }
-    .item-info .item-name { font-size: 0.95rem; }
-    .item-info .item-meta { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-    .item-price { font-weight: 700; color: var(--gold-bright); margin-right: 10px; font-size: 0.95rem; white-space: nowrap; }
-    .item-actions { display: flex; align-items: center; flex-shrink: 0; }
-    .empty-list { text-align: center; padding: 30px; color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
-    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
-    .stat-card { background: var(--navy-light); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 16px; text-align: center; }
-    .stat-card .num { font-family: 'Playfair Display', serif; font-size: 1.6rem; color: var(--gold-bright); font-weight: 700; }
-    .stat-card .label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
-    .overlay.open { display: flex; }
-    .modal { background: var(--navy-card); border: 1px solid rgba(212,160,23,0.3); border-radius: 18px; padding: 26px; width: 100%; max-width: 420px; }
-    .modal h3 { font-family: 'Playfair Display', serif; color: var(--gold-bright); margin-bottom: 18px; }
-    .modal-field { margin-bottom: 12px; }
-    .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
-    .btn-secondary { flex: 1; padding: 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--white); cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.9rem; }
-    .btn-save { flex: 2; padding: 12px; background: linear-gradient(135deg, var(--gold) 0%, var(--gold-bright) 100%); border: none; border-radius: 10px; color: #0b1f3a; font-weight: 700; cursor: pointer; font-family: 'Lato', sans-serif; font-size: 0.9rem; }
-    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-up, .btn-down { background: transparent; border: 1px solid rgba(160,176,200,0.25); color: var(--text-muted); padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; font-family: 'Lato', sans-serif; transition: all 0.15s; margin-right: 3px; }
-    .btn-up:hover, .btn-down:hover { border-color: rgba(212,160,23,0.5); color: var(--gold-bright); }
-    .reorder-note { font-size: 0.73rem; color: var(--text-muted); margin-bottom: 10px; padding: 8px 12px; background: rgba(212,160,23,0.07); border-radius: 8px; border-left: 3px solid var(--gold); }
-    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+    body{background:var(--navy);color:var(--cream);font-family:'Lato',sans-serif;min-height:100vh;padding-bottom:60px;}
+    header{background:linear-gradient(180deg,#060f1e 0%,var(--navy) 100%);padding:18px 18px 16px;border-bottom:1px solid rgba(212,160,23,0.3);display:flex;align-items:center;gap:12px;}
+    header img{width:44px;height:44px;border-radius:50%;}
+    .htxt h1{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--cream);}
+    .htxt p{font-size:0.65rem;color:var(--gold);letter-spacing:0.14em;text-transform:uppercase;font-weight:700;}
+    .hright{margin-left:auto;display:flex;gap:14px;}
+    .hright a{color:var(--muted);text-decoration:none;font-size:0.8rem;}
+    .hright a:hover{color:var(--gold);}
+    .container{max-width:720px;margin:0 auto;padding:18px 16px;}
+    .card{background:var(--navy2);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:20px;margin-bottom:20px;}
+    .card h2{font-family:'Playfair Display',serif;font-size:1rem;color:var(--gold2);margin-bottom:14px;}
+    label{display:block;font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+    input,textarea{width:100%;padding:10px 13px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--cream);font-family:'Lato',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+    input:focus,textarea:focus{border-color:var(--gold);}
+    input::placeholder,textarea::placeholder{color:rgba(160,176,200,0.45);}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .form-grid .full{grid-column:1/-1;}
+    .btn-primary{width:100%;margin-top:12px;padding:12px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0b1f3a;border:none;border-radius:9px;font-family:'Lato',sans-serif;font-weight:700;font-size:0.9rem;cursor:pointer;transition:transform 0.15s;}
+    .btn-primary:hover{transform:translateY(-1px);}
+    .btn-primary:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+    .stat{background:var(--navy2);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:14px;text-align:center;}
+    .stat .n{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--gold2);font-weight:700;}
+    .stat .l{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-top:2px;}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+    .tab{padding:5px 12px;border-radius:50px;border:1px solid rgba(212,160,23,0.3);background:transparent;color:var(--muted);font-size:0.75rem;cursor:pointer;font-family:'Lato',sans-serif;transition:all 0.15s;}
+    .tab.active,.tab:hover{background:rgba(212,160,23,0.15);color:var(--gold2);border-color:var(--gold);}
+    .reorder-tip{font-size:0.72rem;color:var(--muted);padding:7px 11px;background:rgba(212,160,23,0.07);border-left:3px solid var(--gold);border-radius:6px;margin-bottom:12px;}
+    .item-row{display:flex;align-items:center;gap:8px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,0.05);}
+    .item-row:last-child{border-bottom:none;}
+    .item-info{flex:1;min-width:0;}
+    .item-name-txt{font-size:0.9rem;color:var(--cream);}
+    .item-meta{font-size:0.72rem;color:var(--muted);margin-top:2px;}
+    .item-price-txt{font-weight:700;color:var(--gold2);font-size:0.9rem;white-space:nowrap;flex-shrink:0;}
+    .extras-pill{display:inline-block;background:rgba(212,160,23,0.12);border:1px solid rgba(212,160,23,0.25);color:var(--gold2);font-size:0.65rem;padding:1px 7px;border-radius:20px;margin-left:6px;}
+    .item-actions{display:flex;gap:5px;flex-shrink:0;}
+    .btn-up,.btn-down{background:rgba(255,255,255,0.05);border:1px solid rgba(160,176,200,0.2);color:var(--muted);padding:5px 9px;border-radius:7px;font-size:0.75rem;cursor:pointer;transition:all 0.15s;line-height:1;}
+    .btn-up:hover,.btn-down:hover{border-color:rgba(212,160,23,0.5);color:var(--gold2);background:rgba(212,160,23,0.08);}
+    .btn-up:disabled,.btn-down:disabled{opacity:0.2;cursor:not-allowed;}
+    .btn-edit{background:transparent;border:1px solid rgba(240,192,64,0.4);color:var(--gold2);padding:5px 10px;border-radius:7px;font-size:0.75rem;cursor:pointer;transition:background 0.15s;}
+    .btn-edit:hover{background:rgba(240,192,64,0.1);}
+    .btn-danger{background:transparent;border:1px solid rgba(224,85,85,0.4);color:var(--danger);padding:5px 10px;border-radius:7px;font-size:0.75rem;cursor:pointer;transition:background 0.15s;}
+    .btn-danger:hover{background:rgba(224,85,85,0.15);}
+    .empty-list{text-align:center;padding:24px;color:var(--muted);font-style:italic;font-size:0.88rem;}
+    #toast{position:fixed;top:18px;right:18px;padding:11px 18px;border-radius:9px;font-weight:700;font-size:0.85rem;z-index:999;transform:translateY(-70px);opacity:0;transition:all 0.3s;pointer-events:none;max-width:260px;text-align:center;}
+    #toast.show{transform:translateY(0);opacity:1;}
+    #toast.success{background:var(--success);color:#0b1f3a;}
+    #toast.error{background:var(--danger);color:#fff;}
+    #toast.info{background:var(--gold);color:#0b1f3a;}
+    .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;align-items:center;justify-content:center;padding:16px;}
+    .overlay.open{display:flex;}
+    .modal{background:var(--navy3);border:1px solid rgba(212,160,23,0.3);border-radius:18px;padding:24px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
+    .modal h3{font-family:'Playfair Display',serif;color:var(--gold2);margin-bottom:16px;font-size:1.1rem;}
+    .modal-field{margin-bottom:11px;}
+    .extras-section{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08);}
+    .extras-section h4{font-size:0.72rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+    .extra-row-edit{display:flex;gap:8px;align-items:center;margin-bottom:7px;}
+    .extra-name-input{flex:1;padding:8px 11px;font-size:0.82rem;}
+    .btn-remove-extra{background:transparent;border:1px solid rgba(224,85,85,0.4);color:var(--danger);padding:6px 10px;border-radius:7px;font-size:0.78rem;cursor:pointer;flex-shrink:0;}
+    .btn-remove-extra:hover{background:rgba(224,85,85,0.15);}
+    .btn-add-extra{background:rgba(212,160,23,0.1);border:1px solid rgba(212,160,23,0.3);color:var(--gold2);padding:7px 14px;border-radius:8px;font-size:0.78rem;cursor:pointer;font-family:'Lato',sans-serif;margin-top:4px;width:100%;}
+    .btn-add-extra:hover{background:rgba(212,160,23,0.18);}
+    .modal-actions{display:flex;gap:10px;margin-top:14px;}
+    .btn-secondary{flex:1;padding:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--cream);cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
+    .btn-save{flex:2;padding:11px;background:linear-gradient(135deg,var(--gold),var(--gold2));border:none;border-radius:9px;color:#0b1f3a;font-weight:700;cursor:pointer;font-family:'Lato',sans-serif;font-size:0.88rem;}
+    .btn-save:disabled{opacity:0.5;cursor:not-allowed;}
   </style>
 </head>
 <body>
-
 <header>
-  <img src="logo.png" alt="Logo"/>
-  <div>
-    <h1>Admin Dashboard</h1>
-    <p>Grace Garden Hotel</p>
+  <img src="logo.png" alt="Logo" onerror="this.style.display='none'"/>
+  <div class="htxt"><h1>Menu Admin</h1><p>Grace Garden Hotel</p></div>
+  <div class="hright">
+    <a href="index.html">← Menu</a>
+    <a href="hub.html">Hub</a>
   </div>
-  <div class="header-right"><a href="index.html">← View Menu</a></div>
 </header>
 
 <div id="toast"></div>
 
+<!-- Edit Modal -->
 <div class="overlay" id="editOverlay">
   <div class="modal">
     <h3>✏️ Edit Item</h3>
     <div class="modal-field"><label>Item Name</label><input id="editName" placeholder="e.g. Jollof Rice with Chicken"/></div>
-    <div class="modal-field"><label>Price (GH₵)</label><input id="editPrice" type="number" placeholder="e.g. 50"/></div>
-    <div class="modal-field"><label>Category</label><input id="editCategory" placeholder="e.g. Rice Dishes"/></div>
+    <div class="modal-field"><label>Price (GHC)</label><input id="editPrice" type="number" placeholder="e.g. 50"/></div>
+    <div class="modal-field"><label>Category</label><input id="editCategory" list="catList2" placeholder="e.g. Rice Dishes"/><datalist id="catList2"></datalist></div>
     <div class="extras-section">
-      <h4>➕ Add-ons &amp; Options</h4>
+      <h4>➕ Add-ons &amp; Options (no charge)</h4>
       <div id="extrasList"></div>
       <button class="btn-add-extra" onclick="addExtraRow()">+ Add Option</button>
     </div>
@@ -104,17 +114,22 @@
 
 <div class="container">
   <div class="stats" id="stats"></div>
+
+  <!-- Add Item -->
   <div class="card">
     <h2>➕ Add Menu Item</h2>
     <div class="form-grid">
       <div class="full"><label>Item Name</label><input id="addName" placeholder="e.g. Waakye with Fish"/></div>
-      <div><label>Price (GH₵)</label><input id="addPrice" type="number" placeholder="e.g. 45"/></div>
+      <div><label>Price (GHC)</label><input id="addPrice" type="number" placeholder="e.g. 45"/></div>
       <div><label>Category</label><input id="addCategory" list="catList" placeholder="e.g. Local Dishes"/><datalist id="catList"></datalist></div>
     </div>
     <button class="btn-primary" id="addBtn" onclick="addItem()">Add to Menu</button>
   </div>
+
+  <!-- Menu List -->
   <div class="card">
     <h2>📋 Current Menu</h2>
+    <div class="reorder-tip">▲ ▼ Use arrows to reorder items. Changes save instantly.</div>
     <div class="tabs" id="tabs"></div>
     <div id="itemList"><div class="empty-list">Loading menu…</div></div>
   </div>
@@ -122,173 +137,184 @@
 
 <script>
   const FB = "https://grace-garden-a30cc-default-rtdb.firebaseio.com";
-
-  let menuItems    = [];   // array of { _key, name, price, category }
+  let menuItems = [];
   let activeFilter = "All";
-  let editingKey   = null;
+  let editingKey = null;
 
-  // ── Firebase helpers ──
+  // ── Firebase ──
   async function fbGet() {
-    const res  = await fetch(`${FB}/menu.json`);
-    if (!res.ok) throw new Error("Could not reach Firebase");
+    const res = await fetch(`${FB}/menu.json`);
+    if (!res.ok) throw new Error("Fetch failed");
     const data = await res.json();
-    return data
-      ? Object.entries(data).map(([key, val]) => ({ _key: key, ...val }))
-      : [];
+    if (!data) return [];
+    return Object.entries(data)
+      .map(([k,v]) => ({_key:k,...v}))
+      .sort((a,b) => (a.id||0) - (b.id||0));
   }
 
   async function fbPost(item) {
-    // POST creates a new entry with a Firebase-generated key
     const res = await fetch(`${FB}/menu.json`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: item.name, price: item.price, category: item.category })
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(item)
     });
     if (!res.ok) throw new Error("Add failed");
-    return await res.json(); // { name: "<newKey>" }
+    return await res.json();
   }
 
   async function fbPatch(key, item) {
-    const payload = { name: item.name, price: item.price, category: item.category };
+    const payload = { name:item.name, price:item.price, category:item.category, id:item.id };
     if (item.extras !== undefined) payload.extras = item.extras;
     const res = await fetch(`${FB}/menu/${key}.json`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      method:"PATCH", headers:{"Content-Type":"application/json"},
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw new Error("Update failed");
   }
 
-  // saveMenu: rewrite all items (used for reorder)
-  async function saveMenu(items) {
-    for (const item of items) {
-      await fbPatch(item._key, item);
-    }
-  }
-
   async function fbDelete(key) {
-    const res = await fetch(`${FB}/menu/${key}.json`, { method: "DELETE" });
+    const res = await fetch(`${FB}/menu/${key}.json`, { method:"DELETE" });
     if (!res.ok) throw new Error("Delete failed");
   }
 
-  // ── Seed default menu if Firebase is empty ──
-  async function seedIfEmpty() {
-    const defaults = [
-      { name: "Jollof Rice with Chicken",  price: 50, category: "Rice Dishes"  },
-      { name: "Fried Rice with Chicken",   price: 50, category: "Rice Dishes"  },
-      { name: "Banku with Tilapia",        price: 70, category: "Local Dishes" },
-      { name: "Fufu with Light Soup",      price: 65, category: "Local Dishes" },
-      { name: "Coca Cola",                 price: 10, category: "Drinks"       },
-      { name: "Bottled Water",             price: 5,  category: "Drinks"       }
-    ];
-    for (const item of defaults) await fbPost(item);
-  }
-
   // ── Toast ──
-  function toast(msg, type = "success") {
+  function toast(msg, type="success") {
     const el = document.getElementById("toast");
-    el.textContent = msg;
-    el.className = "show " + type;
-    setTimeout(() => { el.className = ""; }, 3200);
+    el.textContent = msg; el.className = "show " + type;
+    setTimeout(() => el.className = "", 3200);
   }
 
   // ── Render ──
   function renderStats() {
-    const cats = new Set(menuItems.map(i => i.category));
-    const minPrice = menuItems.length ? Math.min(...menuItems.map(i => i.price)) : 0;
+    const cats = new Set(menuItems.map(i=>i.category));
+    const min = menuItems.length ? Math.min(...menuItems.map(i=>i.price)) : 0;
     document.getElementById("stats").innerHTML = `
-      <div class="stat-card"><div class="num">${menuItems.length}</div><div class="label">Total Items</div></div>
-      <div class="stat-card"><div class="num">${cats.size}</div><div class="label">Categories</div></div>
-      <div class="stat-card"><div class="num">GH₵${minPrice}</div><div class="label">From</div></div>
-    `;
+      <div class="stat"><div class="n">${menuItems.length}</div><div class="l">Items</div></div>
+      <div class="stat"><div class="n">${cats.size}</div><div class="l">Categories</div></div>
+      <div class="stat"><div class="n">GHC ${min}</div><div class="l">From</div></div>`;
   }
 
   function renderTabs() {
-    const cats = ["All", ...new Set(menuItems.map(i => i.category))];
+    const cats = ["All", ...new Set(menuItems.map(i=>i.category))];
     document.getElementById("tabs").innerHTML = cats.map(c =>
-      `<button class="tab ${c === activeFilter ? 'active' : ''}" onclick="setFilter('${c}')">${c}</button>`
+      `<button class="tab ${c===activeFilter?'active':''}" onclick="setFilter('${c.replace(/'/g,"\\'")}')">${c}</button>`
     ).join("");
-    const dl = document.getElementById("catList");
-    dl.innerHTML = [...new Set(menuItems.map(i => i.category))].map(c => `<option value="${c}">`).join("");
+    const cats2 = [...new Set(menuItems.map(i=>i.category))];
+    ["catList","catList2"].forEach(id => {
+      const dl = document.getElementById(id);
+      if (dl) dl.innerHTML = cats2.map(c=>`<option value="${c}">`).join("");
+    });
   }
 
   function setFilter(cat) { activeFilter = cat; renderTabs(); renderList(); }
 
   function renderList() {
-    const filtered = activeFilter === "All" ? menuItems : menuItems.filter(i => i.category === activeFilter);
+    const filtered = activeFilter === "All"
+      ? menuItems
+      : menuItems.filter(i => i.category === activeFilter);
     const el = document.getElementById("itemList");
-    if (!filtered.length) { el.innerHTML = '<div class="empty-list">No items in this category yet.</div>'; return; }
+    if (!filtered.length) { el.innerHTML = '<div class="empty-list">No items here yet.</div>'; return; }
+
     el.innerHTML = filtered.map((item, idx) => `
       <div class="item-row">
         <div class="item-info">
-          <div class="item-name">${item.name}</div>
+          <div class="item-name-txt">
+            ${item.name}
+            ${item.extras && item.extras.length ? `<span class="extras-pill">${item.extras.length} options</span>` : ''}
+          </div>
           <div class="item-meta">${item.category}</div>
         </div>
+        <span class="item-price-txt">GHC ${parseFloat(item.price).toFixed(2)}</span>
         <div class="item-actions">
-          <span class="item-price">GH₵${parseFloat(item.price).toFixed(2)}</span>
-          <button class="btn-up" onclick="moveItem('${item._key}',-1)" ${idx===0?'disabled':''} title="Move up">▲</button>
-          <button class="btn-down" onclick="moveItem('${item._key}',1)" ${idx===filtered.length-1?'disabled':''} title="Move down">▼</button>
-          ${item.extras && item.extras.length ? `<span class="extras-badge-count">${item.extras.length} extras</span>` : ''}
+          <button class="btn-up" onclick="moveItem('${item._key}',-1)" ${idx===0?'disabled':''}>▲</button>
+          <button class="btn-down" onclick="moveItem('${item._key}',1)" ${idx===filtered.length-1?'disabled':''}>▼</button>
           <button class="btn-edit" onclick="openEdit('${item._key}')">Edit</button>
           <button class="btn-danger" onclick="deleteItem('${item._key}')">✕</button>
         </div>
-      </div>
-    `).join("");
+      </div>`).join("");
   }
 
   function render() { renderStats(); renderTabs(); renderList(); }
 
   // ── Add ──
   async function addItem() {
-    const name     = document.getElementById("addName").value.trim();
-    const price    = parseFloat(document.getElementById("addPrice").value);
+    const name = document.getElementById("addName").value.trim();
+    const price = parseFloat(document.getElementById("addPrice").value);
     const category = document.getElementById("addCategory").value.trim();
-    if (!name)                     { toast("Please enter an item name.", "error"); return; }
+    if (!name) { toast("Please enter a name.", "error"); return; }
     if (isNaN(price) || price < 0) { toast("Please enter a valid price.", "error"); return; }
-    if (!category)                 { toast("Please enter a category.", "error"); return; }
+    if (!category) { toast("Please enter a category.", "error"); return; }
 
     const btn = document.getElementById("addBtn");
     btn.disabled = true; btn.textContent = "Saving…";
     toast("Adding item…", "info");
 
+    const newId = menuItems.length ? Math.max(...menuItems.map(i=>i.id||0)) + 1 : 1;
     try {
-      const result = await fbPost({ name, price, category });
-      menuItems.push({ _key: result.name, name, price, category });
-      document.getElementById("addName").value     = "";
-      document.getElementById("addPrice").value    = "";
+      const result = await fbPost({ id:newId, name, price, category, extras:[] });
+      menuItems.push({ _key:result.name, id:newId, name, price, category, extras:[] });
+      document.getElementById("addName").value = "";
+      document.getElementById("addPrice").value = "";
       document.getElementById("addCategory").value = "";
       toast(`"${name}" added! ✅`);
       render();
-    } catch(e) {
-      toast("Failed to add: " + e.message, "error");
-    }
+    } catch(e) { toast("Failed: " + e.message, "error"); }
     btn.disabled = false; btn.textContent = "Add to Menu";
   }
 
   // ── Delete ──
   async function deleteItem(key) {
-    const item = menuItems.find(i => i._key === key);
+    const item = menuItems.find(i=>i._key===key);
     if (!item || !confirm(`Delete "${item.name}"?`)) return;
     toast("Deleting…", "info");
     try {
       await fbDelete(key);
-      menuItems = menuItems.filter(i => i._key !== key);
+      menuItems = menuItems.filter(i=>i._key!==key);
       toast(`"${item.name}" deleted.`);
       render();
+    } catch(e) { toast("Failed: " + e.message, "error"); }
+  }
+
+  // ── Reorder ──
+  async function moveItem(key, direction) {
+    // Work within the current filtered view
+    const filtered = activeFilter === "All"
+      ? menuItems
+      : menuItems.filter(i => i.category === activeFilter);
+
+    const idx = filtered.findIndex(i => i._key === key);
+    const swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= filtered.length) return;
+
+    // Find positions in the master menuItems array
+    const gA = menuItems.findIndex(i => i._key === filtered[idx]._key);
+    const gB = menuItems.findIndex(i => i._key === filtered[swapIdx]._key);
+
+    // Swap
+    [menuItems[gA], menuItems[gB]] = [menuItems[gB], menuItems[gA]];
+
+    // Update id fields to reflect new order
+    menuItems.forEach((item, i) => { item.id = i + 1; });
+
+    toast("Saving…", "info");
+    try {
+      // Save both swapped items to Firebase
+      await fbPatch(menuItems[gA]._key, menuItems[gA]);
+      await fbPatch(menuItems[gB]._key, menuItems[gB]);
+      toast("Order saved! ✅");
+      render();
     } catch(e) {
-      toast("Failed to delete: " + e.message, "error");
+      toast("Failed to save order: " + e.message, "error");
     }
   }
 
   // ── Edit ──
   function openEdit(key) {
-    const item = menuItems.find(i => i._key === key);
+    const item = menuItems.find(i=>i._key===key);
     if (!item) return;
     editingKey = key;
-    document.getElementById("editName").value     = item.name;
-    document.getElementById("editPrice").value    = item.price;
-    document.getElementById("editCategory").value = item.category;
-    // load extras
+    document.getElementById("editName").value = item.name || "";
+    document.getElementById("editPrice").value = item.price || "";
+    document.getElementById("editCategory").value = item.category || "";
     const extrasList = document.getElementById("extrasList");
     extrasList.innerHTML = "";
     (item.extras || []).forEach(e => addExtraRow(e.name));
@@ -299,7 +325,7 @@
     const row = document.createElement("div");
     row.className = "extra-row-edit";
     row.innerHTML = `
-      <input class="extra-name-input" placeholder="e.g. Extra Chicken, Large Portion, No Pepper…" value="${name}" style="flex:1;"/>
+      <input class="extra-name-input" placeholder="e.g. Extra Chicken, No Pepper, Large Portion" value="${name}"/>
       <button class="btn-remove-extra" onclick="this.parentElement.remove()">✕</button>`;
     document.getElementById("extrasList").appendChild(row);
   }
@@ -310,31 +336,28 @@
   }
 
   async function saveEdit() {
-    const name     = document.getElementById("editName").value.trim();
-    const price    = parseFloat(document.getElementById("editPrice").value);
+    const name = document.getElementById("editName").value.trim();
+    const price = parseFloat(document.getElementById("editPrice").value);
     const category = document.getElementById("editCategory").value.trim();
     if (!name || isNaN(price) || !category) { toast("Please fill all fields.", "error"); return; }
 
-    // collect extras (name only)
     const extras = [];
-    document.querySelectorAll("#extrasList .extra-row-edit").forEach(row => {
-      const ename = row.querySelector('.extra-name-input').value.trim();
-      if (ename) extras.push({ name: ename });
+    document.querySelectorAll("#extrasList .extra-name-input").forEach(input => {
+      const v = input.value.trim();
+      if (v) extras.push({ name: v });
     });
 
     const btn = document.getElementById("saveEditBtn");
     btn.disabled = true; btn.textContent = "Saving…";
 
     try {
-      await fbPatch(editingKey, { name, price, category, extras });
-      const idx = menuItems.findIndex(i => i._key === editingKey);
-      if (idx > -1) menuItems[idx] = { ...menuItems[idx], name, price, category, extras };
+      const idx = menuItems.findIndex(i=>i._key===editingKey);
+      const updatedItem = { ...menuItems[idx], name, price, category, extras };
+      await fbPatch(editingKey, updatedItem);
+      menuItems[idx] = updatedItem;
       toast(`"${name}" updated! ✅`);
-      closeEdit();
-      render();
-    } catch(e) {
-      toast("Failed to update: " + e.message, "error");
-    }
+      closeEdit(); render();
+    } catch(e) { toast("Failed: " + e.message, "error"); }
     btn.disabled = false; btn.textContent = "Save Changes";
   }
 
@@ -342,29 +365,18 @@
     if (e.target === this) closeEdit();
   });
 
-  // ── Reorder ──
-  async function moveItem(id, direction) {
-    // Get items in current filtered view
-    const filtered = activeFilter === "All" ? menuItems : menuItems.filter(i => i.category === activeFilter);
-    const idx = filtered.findIndex(i => i.id === id);
-    const swapIdx = idx + direction;
-    if (swapIdx < 0 || swapIdx >= filtered.length) return;
-
-    const itemA = filtered[idx];
-    const itemB = filtered[swapIdx];
-
-    // Swap their positions in menuItems array
-    const globalIdxA = menuItems.findIndex(i => i.id === itemA.id);
-    const globalIdxB = menuItems.findIndex(i => i.id === itemB.id);
-    [menuItems[globalIdxA], menuItems[globalIdxB]] = [menuItems[globalIdxB], menuItems[globalIdxA]];
-
-    toast("Saving order…", "info");
-    try {
-      await saveMenu(menuItems);
-      toast("Order updated! ✅");
-      render();
-    } catch(e) {
-      toast("Failed to save order.", "error");
+  // ── Seed default menu if empty ──
+  async function seedIfEmpty() {
+    const defaults = [
+      { name:"Jollof Rice with Chicken", price:50, category:"Rice Dishes", extras:[] },
+      { name:"Fried Rice with Chicken", price:50, category:"Rice Dishes", extras:[] },
+      { name:"Banku with Tilapia", price:70, category:"Local Dishes", extras:[] },
+      { name:"Fufu with Light Soup", price:65, category:"Local Dishes", extras:[] },
+      { name:"Coca Cola", price:10, category:"Drinks", extras:[] },
+      { name:"Bottled Water", price:5, category:"Drinks", extras:[] }
+    ];
+    for (let i=0; i<defaults.length; i++) {
+      await fbPost({ ...defaults[i], id: i+1 });
     }
   }
 
@@ -372,15 +384,14 @@
   (async () => {
     try {
       menuItems = await fbGet();
-      if (menuItems.length === 0) {
-        toast("Setting up menu for first time…", "info");
+      if (!menuItems.length) {
+        toast("Setting up menu…","info");
         await seedIfEmpty();
         menuItems = await fbGet();
       }
       render();
     } catch(e) {
-      document.getElementById("itemList").innerHTML =
-        '<div class="empty-list">Could not connect to database. Check your internet connection.</div>';
+      document.getElementById("itemList").innerHTML = '<div class="empty-list">Could not connect. Check your internet.</div>';
       toast("Connection failed.", "error");
     }
   })();
